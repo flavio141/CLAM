@@ -1,2 +1,5 @@
 **/.DS_Store
 __pycache__/
+venv/
+DATA_DIRECTORY/
+RESULTS_DIRECTORY/
