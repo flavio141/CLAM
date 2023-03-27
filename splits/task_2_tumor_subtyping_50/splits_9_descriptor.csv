@@ -1,4 +1,4 @@
 ,train,val,test
-subtype_1,101,26,24
-subtype_2,59,14,14
-subtype_3,39,9,8
+CCRCC,310,52,51
+CRCC,66,12,14
+PRCC,180,28,36

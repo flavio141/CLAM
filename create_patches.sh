@@ -12,7 +12,7 @@ do
     if [ -d "$folder" ]; then
         # Cancella la cartella e tutte le sue sottocartelle
         echo "Cancellazione delle subfolders di $folder..."
-        rm -rf $folder/*
+        #rm -rf $folder/*
     else
         echo "Attenzione: la cartella $folder non esiste."
     fi
