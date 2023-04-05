@@ -50,7 +50,15 @@ def identify_non_tumor(tcga_list):
     os.system('mv non_tumor.txt datasets')
 
 
-tcga_list = select_dataset("/data/kidney")
-create_csv_for_train(tcga_list)
+def move_folders(path):
+    for folder in os.listdir(path):
+        if len(folder.split("-")) == 5:
+            os.system(f'mv {os.path.join(path, folder)} prostate_data')
+        else:
+            continue
+
+#move_folders("/data/fsartori")
+#tcga_list = select_dataset("/data/kidney")
+#create_csv_for_train(tcga_list)
 #create_link(tcga_list)
-identify_non_tumor(tcga_list)
+#identify_non_tumor(tcga_list)

@@ -1,0 +1,1 @@
+{'task': 'task_2_tumor_subtyping', 'split': 'test', 'save_dir': './eval_results/EVAL_task_2_tumor_subtyping_retrain_cv', 'models_dir': 'results/task_2_tumor_subtyping_retrain_s1', 'model_type': 'clam_sb', 'drop_out': True, 'model_size': 'small'}
