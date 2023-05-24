@@ -1,4 +1,4 @@
 ,train,val,test
-CCRCC,331,51,52
-CRCC,70,11,11
-PRCC,197,29,28
+stage_2,100,16,16
+stage_3,169,26,23
+stage_4,11,1,1

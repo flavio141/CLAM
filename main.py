@@ -160,18 +160,18 @@ if args.task == 'task_1_tumor_vs_normal':
                                   shuffle=False,
                                   seed=args.seed,
                                   print_info=True,
-                                  label_dict={'normal_tissue': 0, 'tumor_tissue': 1},
+                                  label_dict={'0': 0, '1': 1},
                                   patient_strat=False,
                                   ignore=[])
 
 elif args.task == 'task_2_tumor_subtyping':
-    args.n_classes = 3
+    args.n_classes = 2
     dataset = Generic_MIL_Dataset(csv_path='dataset_csv/tumor_subtyping.csv',
                                   data_dir=os.path.join(args.data_root_dir, 'tumor_subtyping_resnet_features'),
                                   shuffle=False,
                                   seed=args.seed,
                                   print_info=True,
-                                  label_dict={'CCRCC': 0, 'CRCC': 1, 'PRCC': 2},
+                                  label_dict={'stage_2': 0, 'stage_3': 1},
                                   patient_strat=False,
                                   ignore=[])
 

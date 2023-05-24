@@ -5,3 +5,6 @@ DATA_DIRECTORY/
 RESULTS_DIRECTORY/
 FEATURES_DIRECTORY/
 results/
+dataset_csv/
+datasets/list.txt
+splits/
