@@ -6,7 +6,7 @@
             "type": "python",
             "request": "launch",
             "program": "main.py",
-            "args": ["--drop_out", "--early_stopping", "--lr", "2e-4", "--k", "10", "--label_frac", "0.5", "--exp_code", "task_2_tumor_subtyping", "--weighted_sample", "--split_dir", "task_2_tumor_subtyping_80","--bag_loss", "ce", "--inst_loss", "svm", "--task", "task_2_tumor_subtyping", "--model_type", "clam_sb", "--log_data", "--subtyping", "--data_root_dir", "FEATURES_DIRECTORY"],
+            "args": ["--drop_out", "--early_stopping", "--lr", "2e-4", "--k", "5", "--label_frac", "0.5", "--exp_code", "task_1_tumor_vs_normal_debug", "--weighted_sample", "--split_dir", "task_1_tumor_vs_normal_75","--bag_loss", "ce", "--inst_loss", "svm", "--task", "task_1_tumor_vs_normal", "--model_type", "clam_sb", "--log_data", "--data_root_dir", "FEATURES_DIRECTORY"],
             "justMyCode": true
         }
     ]
