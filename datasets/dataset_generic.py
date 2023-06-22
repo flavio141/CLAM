@@ -150,20 +150,21 @@ class Generic_WSI_Classification_Dataset(Dataset):
             print('Patient-LVL; Number of samples registered in class %d: %d' % (i, self.patient_cls_ids[i].shape[0]))
             print('Slide-LVL; Number of samples registered in class %d: %d' % (i, self.slide_cls_ids[i].shape[0]))
 
-    def create_splits(self, k=3, val_num=(25, 25), test_num=(40, 40), label_frac=1.0, custom_test_ids=None):
+    def create_splits(self, k=3, val_num=(25, 25), test_num=(40, 40), label_frac=1.0, custom_test_ids=None, stratified=True):
         settings = {
             'n_splits': k,
             'val_num': val_num,
             'test_num': test_num,
             'label_frac': label_frac,
             'seed': self.seed,
-            'custom_test_ids': custom_test_ids
+            'custom_test_ids': custom_test_ids,
+            'stratified': stratified
         }
 
         if self.patient_strat:
-            settings.update({'cls_ids': self.patient_cls_ids, 'samples': len(self.patient_data['case_id'])})
+            settings.update({'cls_ids': self.patient_cls_ids, 'samples': len(self.patient_data['case_id']), 'data': self.slide_data})
         else:
-            settings.update({'cls_ids': self.slide_cls_ids, 'samples': len(self.slide_data)})
+            settings.update({'cls_ids': self.slide_cls_ids, 'samples': len(self.slide_data), 'data': self.slide_data})
 
         self.split_gen = generate_split(**settings)
 
@@ -181,7 +182,7 @@ class Generic_WSI_Classification_Dataset(Dataset):
                 for idx in ids[split]:
                     case_id = self.patient_data['case_id'][idx]
                     slide_indices = self.slide_data[self.slide_data['case_id'] == case_id].index.tolist()
-                    slide_ids[split].extend(slide_indices)
+                    slide_ids[split].extend([slide_indices[0]])
 
             self.train_ids, self.val_ids, self.test_ids = slide_ids[0], slide_ids[1], slide_ids[2]
 

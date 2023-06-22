@@ -2,7 +2,7 @@ import pickle
 import torch
 import numpy as np
 import torch.nn as nn
-import pdb
+import random
 
 import torch
 import numpy as np
@@ -94,7 +94,7 @@ def print_network(net):
 
 
 def generate_split(cls_ids, val_num, test_num, samples, n_splits = 5,
-	seed = 7, label_frac = 1.0, custom_test_ids = None):
+	seed = 7, label_frac = 1.0, custom_test_ids = None, data=None, stratified=True):
 	indices = np.arange(samples).astype(int)
 	
 	if custom_test_ids is not None:
@@ -129,7 +129,18 @@ def generate_split(cls_ids, val_num, test_num, samples, n_splits = 5,
 				sample_num  = math.ceil(len(remaining_ids) * label_frac)
 				slice_ids = np.arange(sample_num)
 				sampled_train_ids.extend(remaining_ids[slice_ids])
+		
+		if stratified and data is not None:
+			labels = data['label'][sampled_train_ids]
+			__, counts = np.unique(labels, return_counts=True)
+			index_max = np.argmax(counts)
+			index_min = np.argmin(counts)
+			index_first_class = data['label'][sampled_train_ids][data['label'].loc[sampled_train_ids] == index_max].index.to_list()
+			index_last_class = data['label'][sampled_train_ids][data['label'].loc[sampled_train_ids] == index_min].index.to_list()
+			index_first_class = random.sample(index_first_class, int(min(counts) * 1.15))
+			sampled_train_ids = index_first_class + index_last_class
 
+		
 		yield sampled_train_ids, all_val_ids, all_test_ids
 
 

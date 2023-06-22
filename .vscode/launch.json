@@ -2,11 +2,35 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: File",
+            "name": "Python: Train",
             "type": "python",
             "request": "launch",
             "program": "main.py",
-            "args": ["--drop_out", "--early_stopping", "--lr", "2e-4", "--k", "5", "--label_frac", "0.5", "--exp_code", "task_1_tumor_vs_normal_debug", "--weighted_sample", "--split_dir", "task_1_tumor_vs_normal_75","--bag_loss", "ce", "--inst_loss", "svm", "--task", "task_1_tumor_vs_normal", "--model_type", "clam_sb", "--log_data", "--data_root_dir", "FEATURES_DIRECTORY"],
+            "args": ["--drop_out", "--early_stopping", "--lr", "2e-4", "--k", "5", "--label_frac", "1", "--exp_code", "task_1_tumor_vs_normal_debug", "--weighted_sample", "--split_dir", "task_1_tumor_vs_normal_100","--bag_loss", "ce", "--inst_loss", "svm", "--task", "task_1_tumor_vs_normal", "--model_type", "clam_sb", "--log_data", "--data_root_dir", "FEATURES_DIRECTORY"],
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Eval",
+            "type": "python",
+            "request": "launch",
+            "program": "eval.py",
+            "args": ["--drop_out", "--k", "5", "--models_exp_code", "task_1_tumor_prostate_focal_s1", "--save_exp_code", "task_1_tumor_prostate_focal_eval", "--task", "task_1_tumor_vs_normal", "--model_type", "clam_sb", "--data_root_dir", "FEATURES_DIRECTORY"],
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Split",
+            "type": "python",
+            "request": "launch",
+            "program": "create_splits_seq.py",
+            "args": ["--task", "task_1_tumor_vs_normal", "--seed", "1", "--label_frac", "1", "--k", "5"],
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Patches",
+            "type": "python",
+            "request": "launch",
+            "program": "create_patches_fp.py",
+            "args": ["--source", "DATA_DIRECTORY", "--save_dir", "DEBUG_DIRECTORY", "--patch_size", "256", "--preset", "bwh_biopsy.csv", "--seg", "--patch", "--stitch"],
             "justMyCode": true
         }
     ]

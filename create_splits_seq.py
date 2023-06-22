@@ -27,7 +27,7 @@ if args.task == 'task_1_tumor_vs_normal':
                             seed = args.seed, 
                             print_info = True,
                             label_dict = {'normal_tissue':0, 'tumor_tissue':1},
-                            patient_strat=True,
+                            patient_strat=False,
                             ignore=[])
 
 elif args.task == 'task_2_tumor_subtyping':
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     for lf in label_fracs:
         split_dir = 'splits/'+ str(args.task) + '_{}'.format(int(lf * 100))
         os.makedirs(split_dir, exist_ok=True)
-        dataset.create_splits(k = args.k, val_num = val_num, test_num = test_num, label_frac=lf)
+        dataset.create_splits(k = args.k, val_num = val_num, test_num = test_num, label_frac=lf, custom_test_ids=np.array([275, 262, 9, 136, 183, 30, 222, 97, 173, 202, 162, 207, 22, 110, 17, 60, 214, 92, 249, 4, 42, 205, 238, 26, 257, 128]), stratified=True)
         for i in range(args.k):
             dataset.set_splits()
             descriptor_df = dataset.test_split_gen(return_descriptor=True)

@@ -7,4 +7,5 @@ FEATURES_DIRECTORY/
 results/
 dataset_csv/
 datasets/list.txt
+eval_results/
 splits/

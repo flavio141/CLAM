@@ -73,7 +73,7 @@ def summary(model, loader, args):
         with torch.no_grad():
             logits, Y_prob, Y_hat, _, results_dict = model(data)
         
-        acc_logger.log(Y_hat, label)
+        acc_logger.log(Y_hat, label, logits[:,1])
         
         probs = Y_prob.cpu().numpy()
 
@@ -115,4 +115,7 @@ def summary(model, loader, args):
     for c in range(args.n_classes):
         results_dict.update({'p_{}'.format(c): all_probs[:,c]})
     df = pd.DataFrame(results_dict)
+    mtt, f1, balanced = acc_logger.matthews(args.n_classes)
+    print('matthews coefficient: {}, f1-score: {}, balanced accuracy: {}'.format(mtt, f1, balanced))
+    acc_logger.confusion(args.n_classes)
     return patient_results, test_error, auc_score, df, acc_logger

@@ -6,7 +6,7 @@ from datasets.dataset_generic import save_splits
 from models.model_mil import MIL_fc, MIL_fc_mc
 from models.model_clam import CLAM_MB, CLAM_SB
 from sklearn.preprocessing import label_binarize
-from sklearn.metrics import roc_auc_score, roc_curve, matthews_corrcoef
+from sklearn.metrics import roc_auc_score, roc_curve, matthews_corrcoef, f1_score, balanced_accuracy_score, confusion_matrix
 from sklearn.metrics import auc as calc_auc
 
 
@@ -21,7 +21,7 @@ class Accuracy_Logger(object):
     def initialize(self):
         self.data = [{"count": 0, "correct": 0, "predicted_values": [], "true_values": []} for i in range(self.n_classes)]
 
-    def log(self, Y_hat, Y, logits):
+    def log(self, Y_hat, Y, logits=None):
         Y_hat = int(Y_hat)
         Y = int(Y)
         self.data[Y]["count"] += 1
@@ -37,6 +37,29 @@ class Accuracy_Logger(object):
             self.data[label_class]["count"] += cls_mask.sum()
             self.data[label_class]["correct"] += (Y_hat[cls_mask] == Y[cls_mask]).sum()
 
+    def matthews(self, n_classes):
+        true_values = []
+        predicted_values = []
+
+        for c in range(n_classes):
+            true_values = true_values + self.data[c]["true_values"]
+            predicted_values = predicted_values + self.data[c]["predicted_values"]
+        mtt = matthews_corrcoef(true_values, predicted_values)
+        f1 = f1_score(true_values, predicted_values)
+        balanced = balanced_accuracy_score(true_values, predicted_values)
+        return mtt, f1, balanced
+
+    def confusion(self, n_classes):
+        true_values = []
+        predicted_values = []
+
+        for c in range(n_classes):
+            true_values = true_values + self.data[c]["true_values"]
+            predicted_values = predicted_values + self.data[c]["predicted_values"]
+
+        print(confusion_matrix(true_values, predicted_values))
+        
+
     def get_summary(self, c):
         count = self.data[c]["count"]
         correct = self.data[c]["correct"]
@@ -44,10 +67,7 @@ class Accuracy_Logger(object):
         if count == 0:
             acc = None
         else:
-            if len(self.data[c]["true_values"]) > 0:
-                acc = matthews_corrcoef(self.data[c]["true_values"], self.data[c]["predicted_values"])
-            else:
-                acc = float(correct) / count
+            acc = float(correct) / count
 
         return acc, correct, count
 
@@ -55,7 +75,7 @@ class Accuracy_Logger(object):
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
 
-    def __init__(self, patience=20, stop_epoch=50, verbose=False):
+    def __init__(self, patience=20, stop_epoch=20, verbose=False):
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
@@ -128,8 +148,9 @@ def train(datasets, cur, args):
         if device.type == 'cuda':
             loss_fn = loss_fn.cuda()
     else:
-        from torchvision.ops import sigmoid_focal_loss
-        loss_fn = sigmoid_focal_loss
+        #from torchvision.ops import sigmoid_focal_loss
+        #loss_fn = sigmoid_focal_loss
+        loss_fn = nn.CrossEntropyLoss()
     print('Done!')
 
     print('\nInit Model...', end=' ')
@@ -215,10 +236,10 @@ def train(datasets, cur, args):
 
     for i in range(args.n_classes):
         acc, correct, count = acc_logger.get_summary(i)
-        print('class {}: mcc {}, correct {}/{}'.format(i, acc, correct, count))
+        print('class {}: acc {}, correct {}/{}'.format(i, acc, correct, count))
 
         if writer:
-            writer.add_scalar('final/test_class_{}_mcc'.format(i), acc, 0)
+            writer.add_scalar('final/test_class_{}_acc'.format(i), acc, 0)
 
     if writer:
         writer.add_scalar('final/val_error', val_error, 0)
@@ -246,7 +267,8 @@ def train_loop_clam(epoch, model, loader, optimizer, n_classes, bag_weight, writ
         logits, Y_prob, Y_hat, _, instance_dict = model(data, label=label, instance_eval=True)
 
         acc_logger.log(Y_hat, label, logits[:, 1])
-        loss = loss_fn(logits[:, 1], label.to(torch.float))
+        #loss = loss_fn(logits[:, 1], label.to(torch.float))
+        loss = loss_fn(logits, label)
         loss_value = loss.item()
 
         instance_loss = instance_dict['instance_loss']
@@ -292,9 +314,13 @@ def train_loop_clam(epoch, model, loader, optimizer, n_classes, bag_weight, writ
                                                                                                       train_error))
     for i in range(n_classes):
         acc, correct, count = acc_logger.get_summary(i)
-        print('class {}: mcc {}, correct {}/{}'.format(i, acc, correct, count))
+        print('class {}: acc {}, correct {}/{}'.format(i, acc, correct, count))
         if writer and acc is not None:
-            writer.add_scalar('train/class_{}_mcc'.format(i), acc, epoch)
+            writer.add_scalar('train/class_{}_acc'.format(i), acc, epoch)
+    
+    mtt, f1, balanced = acc_logger.matthews(n_classes)
+    print('matthews coefficient: {}, f1-score: {}, balanced accuracy: {}'.format(mtt, f1, balanced))
+
 
     if writer:
         writer.add_scalar('train/loss', train_loss, epoch)
@@ -340,9 +366,9 @@ def train_loop(epoch, model, loader, optimizer, n_classes, writer=None, loss_fn=
     print('Epoch: {}, train_loss: {:.4f}, train_error: {:.4f}'.format(epoch, train_loss, train_error))
     for i in range(n_classes):
         acc, correct, count = acc_logger.get_summary(i)
-        print('class {}: mcc {}, correct {}/{}'.format(i, acc, correct, count))
+        print('class {}: acc {}, correct {}/{}'.format(i, acc, correct, count))
         if writer:
-            writer.add_scalar('train/class_{}_mcc'.format(i), acc, epoch)
+            writer.add_scalar('train/class_{}_acc'.format(i), acc, epoch)
 
     if writer:
         writer.add_scalar('train/loss', train_loss, epoch)
@@ -429,7 +455,8 @@ def validate_clam(cur, epoch, model, loader, n_classes, early_stopping=None, wri
             logits, Y_prob, Y_hat, _, instance_dict = model(data, label=label, instance_eval=True)
             acc_logger.log(Y_hat, label, logits[:, 1])
 
-            loss = loss_fn(logits[:,1], label.to(torch.float))
+            #loss = loss_fn(logits[:, 1], label.to(torch.float))
+            loss = loss_fn(logits, label)
 
             val_loss += loss.item()
 
